@@ -259,6 +259,12 @@
 </head>
 <body>
     <div class="container">
+        <!-- DEBUG PANEL (Remove after testing) -->
+        <div id="debugInfo" style="background: #f0f0f0; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-family: monospace; max-height: 200px; overflow-y: auto; font-size: 12px; display: none;">
+            <strong style="color: #333;">Debug Info:</strong>
+            <div style="color: blue; margin-top: 5px;">[Initializing app...]</div>
+        </div>
+
         <!-- Authentication Section -->
         <div class="auth-section active" id="authSection">
             <div class="header">
@@ -392,9 +398,50 @@
         // Replace this with your Google Apps Script Web App URL
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxBYRwiUVUrgfl9KoiX_lEA5baWrZXELJx2WU1fy3Eu2k4EnVAgsGU4PuerVhUG8qas/exec";
 
+        // ========== DEBUG MODE ==========
+        const DEBUG = true; // Set to false after testing
+        
+        function debugLog(message, data = null) {
+            if (DEBUG) {
+                console.log(`[DEBUG] ${message}`, data || '');
+                // Also show on page for testing
+                const debugDiv = document.getElementById('debugInfo');
+                if (debugDiv) {
+                    debugDiv.innerHTML += `<div style="color: blue; font-size: 12px; margin: 5px 0;">[✓] ${message}</div>`;
+                }
+            }
+        }
+
+        function debugError(message, error = null) {
+            console.error(`[ERROR] ${message}`, error || '');
+            const debugDiv = document.getElementById('debugInfo');
+            if (debugDiv) {
+                debugDiv.innerHTML += `<div style="color: red; font-size: 12px; margin: 5px 0; background: #ffe0e0; padding: 5px; border-radius: 3px;">[✗] ${message}</div>`;
+            }
+        }
+
         // ========== FIREBASE INITIALIZATION ==========
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
+        try {
+            // Check if config is valid
+            const isConfigValid = firebaseConfig.apiKey && 
+                                 firebaseConfig.apiKey !== "YOUR_API_KEY" &&
+                                 firebaseConfig.projectId && 
+                                 firebaseConfig.projectId !== "YOUR_PROJECT_ID";
+            
+            if (!isConfigValid) {
+                debugError('Firebase config is incomplete! Replace YOUR_* placeholders with actual values from Firebase Console');
+                throw new Error('Invalid Firebase Config');
+            }
+            
+            debugLog('Firebase config is valid, initializing...');
+            firebase.initializeApp(firebaseConfig);
+            debugLog('Firebase initialized successfully');
+            
+            const auth = firebase.auth();
+            debugLog('Auth module loaded');
+        } catch (error) {
+            debugError('Failed to initialize Firebase', error);
+        }
 
         // ========== DOM ELEMENTS ==========
         const authSection = document.getElementById('authSection');
@@ -629,37 +676,67 @@
         }
 
         // ========== EVENT LISTENERS ==========
-        document.getElementById('switchToSignup').addEventListener('click', switchToSignup);
-        document.getElementById('switchToLogin').addEventListener('click', switchToLogin);
-        loginBtn.addEventListener('click', handleLogin);
-        signupBtn.addEventListener('click', handleSignup);
-        submitBtn.addEventListener('click', handleSubmitExpense);
-        logoutBtn.addEventListener('click', handleLogout);
+        try {
+            debugLog('Attaching event listeners...');
+            document.getElementById('switchToSignup').addEventListener('click', switchToSignup);
+            document.getElementById('switchToLogin').addEventListener('click', switchToLogin);
+            loginBtn.addEventListener('click', handleLogin);
+            signupBtn.addEventListener('click', handleSignup);
+            submitBtn.addEventListener('click', handleSubmitExpense);
+            logoutBtn.addEventListener('click', handleLogout);
+            debugLog('All event listeners attached successfully');
+        } catch (e) {
+            debugError('Failed to attach event listeners', e);
+        }
 
         // Allow Enter key to submit
-        loginPassword.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleLogin();
-        });
-        signupPasswordConfirm.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleSignup();
-        });
-        details.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && e.ctrlKey) handleSubmitExpense();
-        });
+        try {
+            loginPassword.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleLogin();
+            });
+            signupPasswordConfirm.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleSignup();
+            });
+            details.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && e.ctrlKey) handleSubmitExpense();
+            });
+            debugLog('Keyboard event listeners attached');
+        } catch (e) {
+            debugError('Failed to attach keyboard listeners', e);
+        }
 
         // ========== FIREBASE AUTH STATE LISTENER ==========
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                showFormSection(user);
-            } else {
-                showAuthSection();
-            }
-        });
+        try {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    debugLog('User logged in:', user.email);
+                    showFormSection(user);
+                } else {
+                    debugLog('No user logged in, showing auth section');
+                    showAuthSection();
+                }
+            });
+            debugLog('Auth state listener attached');
+        } catch (e) {
+            debugError('Failed to attach auth state listener', e);
+        }
 
         // Set date on page load
         document.addEventListener('DOMContentLoaded', () => {
+            debugLog('Page loaded');
             if (auth.currentUser) {
                 setDateToToday();
+            }
+        });
+
+        // Show debug panel when page loads
+        window.addEventListener('load', () => {
+            const debugPanel = document.getElementById('debugInfo');
+            if (debugPanel && DEBUG) {
+                debugPanel.style.display = 'block';
+                debugLog('Debug panel enabled - Firebase config values:');
+                debugLog('apiKey: ' + (firebaseConfig.apiKey.substring(0, 10) + '...'));
+                debugLog('projectId: ' + firebaseConfig.projectId);
             }
         });
     </script>
