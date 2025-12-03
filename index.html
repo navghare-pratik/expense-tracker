@@ -659,7 +659,7 @@
             // Convert data to form format for Apps Script
             const formData = new FormData();
             Object.keys(data).forEach(key => {
-                formData.append(`data[${key}]`, data[key]);
+                formData.append(key, data[key]);   // NEW CODE
             });
 
             fetch(APPS_SCRIPT_URL, {
