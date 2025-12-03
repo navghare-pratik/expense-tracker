@@ -421,6 +421,8 @@
         }
 
         // ========== FIREBASE INITIALIZATION ==========
+        let auth = null;
+        
         try {
             // Check if config is valid
             const isConfigValid = firebaseConfig.apiKey && 
@@ -437,10 +439,16 @@
             firebase.initializeApp(firebaseConfig);
             debugLog('Firebase initialized successfully');
             
-            const auth = firebase.auth();
-            debugLog('Auth module loaded');
+            // Initialize Auth - this can fail separately
+            if (firebase.auth) {
+                auth = firebase.auth();
+                debugLog('Auth module loaded successfully');
+            } else {
+                throw new Error('Firebase Auth module not available');
+            }
         } catch (error) {
-            debugError('Failed to initialize Firebase', error);
+            debugError('Failed to initialize Firebase: ' + error.message, error);
+            console.error('Firebase Error:', error);
         }
 
         // ========== DOM ELEMENTS ==========
@@ -678,15 +686,19 @@
         // ========== EVENT LISTENERS ==========
         try {
             debugLog('Attaching event listeners...');
-            document.getElementById('switchToSignup').addEventListener('click', switchToSignup);
-            document.getElementById('switchToLogin').addEventListener('click', switchToLogin);
-            loginBtn.addEventListener('click', handleLogin);
-            signupBtn.addEventListener('click', handleSignup);
-            submitBtn.addEventListener('click', handleSubmitExpense);
-            logoutBtn.addEventListener('click', handleLogout);
+            if (document.getElementById('switchToSignup')) {
+                document.getElementById('switchToSignup').addEventListener('click', switchToSignup);
+            }
+            if (document.getElementById('switchToLogin')) {
+                document.getElementById('switchToLogin').addEventListener('click', switchToLogin);
+            }
+            if (loginBtn) loginBtn.addEventListener('click', handleLogin);
+            if (signupBtn) signupBtn.addEventListener('click', handleSignup);
+            if (submitBtn) submitBtn.addEventListener('click', handleSubmitExpense);
+            if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
             debugLog('All event listeners attached successfully');
         } catch (e) {
-            debugError('Failed to attach event listeners', e);
+            debugError('Failed to attach event listeners: ' + e.message, e);
         }
 
         // Allow Enter key to submit
@@ -707,18 +719,22 @@
 
         // ========== FIREBASE AUTH STATE LISTENER ==========
         try {
-            auth.onAuthStateChanged(user => {
-                if (user) {
-                    debugLog('User logged in:', user.email);
-                    showFormSection(user);
-                } else {
-                    debugLog('No user logged in, showing auth section');
-                    showAuthSection();
-                }
-            });
-            debugLog('Auth state listener attached');
+            if (auth) {
+                auth.onAuthStateChanged(user => {
+                    if (user) {
+                        debugLog('User logged in:', user.email);
+                        showFormSection(user);
+                    } else {
+                        debugLog('No user logged in, showing auth section');
+                        showAuthSection();
+                    }
+                });
+                debugLog('Auth state listener attached successfully');
+            } else {
+                debugError('Auth module not initialized - Check Firebase Console Email/Password is enabled');
+            }
         } catch (e) {
-            debugError('Failed to attach auth state listener', e);
+            debugError('Failed to attach auth state listener: ' + e.message, e);
         }
 
         // Set date on page load
