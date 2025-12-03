@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <style>
+        :root {
+            --color-white: rgba(255, 255, 255, 1);
+            --color-black: rgba(0, 0, 0, 1);
+            --color-cream-50: rgba(252, 252, 249, 1);
+            --color-cream-100: rgba(255, 255, 253, 1);
+            --color-gray-200: rgba(245, 245, 245, 1);
+            --color-teal-500: rgba(33, 128, 141, 1);
+            --color-teal-600: rgba(29, 116, 128, 1);
+            --color-slate-900: rgba(19, 52, 59, 1);
+            --color-red-500: rgba(192, 21, 47, 1);
+            --color-error: var(--color-red-500);
+            --color-success: var(--color-teal-500);
+            --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --space-8: 8px;
+            --space-12: 12px;
+            --space-16: 16px;
+            --space-20: 20px;
+            --space-24: 24px;
+            --space-32: 32px;
+            --radius-base: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: var(--space-16);
+            font-family: var(--font-family-base);
+            background: var(--color-cream-50);
+            color: var(--color-slate-900);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: var(--space-32);
+        }
+
+        .header h1 {
+            margin: 0 0 var(--space-8) 0;
+            font-size: 28px;
+            color: var(--color-slate-900);
+        }
+
+        .header p {
+            margin: 0;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .card {
+            background: var(--color-white);
+            border-radius: var(--radius-base);
+            padding: var(--space-24);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            margin-bottom: var(--space-16);
+        }
+
+        .form-group {
+            margin-bottom: var(--space-16);
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: var(--space-8);
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--color-slate-900);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: var(--space-12);
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: var(--radius-base);
+            font-family: var(--font-family-base);
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--color-teal-500);
+            box-shadow: 0 0 0 3px rgba(33, 128, 141, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            padding: var(--space-12) var(--space-24);
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--font-family-base);
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: var(--color-teal-500);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--color-teal-600);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: var(--color-slate-900);
+            margin-top: var(--space-12);
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .auth-section {
+            display: none;
+        }
+
+        .auth-section.active {
+            display: block;
+        }
+
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        .auth-toggle {
+            text-align: center;
+            margin-top: var(--space-16);
+            font-size: 14px;
+        }
+
+        .auth-toggle button {
+            background: none;
+            border: none;
+            color: var(--color-teal-500);
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 14px;
+        }
+
+        .auth-toggle button:hover {
+            color: var(--color-teal-600);
+        }
+
+        .user-info {
+            background: var(--color-cream-50);
+            padding: var(--space-12);
+            border-radius: var(--radius-base);
+            margin-bottom: var(--space-16);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info span {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .btn-logout {
+            padding: var(--space-8) var(--space-16);
+            background: #f0f0f0;
+            color: var(--color-slate-900);
+            border: none;
+            border-radius: var(--radius-base);
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: #e0e0e0;
+        }
+
+        .alert {
+            padding: var(--space-12);
+            border-radius: var(--radius-base);
+            margin-bottom: var(--space-16);
+            font-size: 14px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background: rgba(33, 128, 141, 0.1);
+            color: var(--color-success);
+            border: 1px solid var(--color-success);
+        }
+
+        .alert-error {
+            background: rgba(192, 21, 47, 0.1);
+            color: var(--color-error);
+            border: 1px solid var(--color-error);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            border-top-color: var(--color-teal-500);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .required {
+            color: var(--color-error);
+        }
+
+        @media (max-width: 600px) {
+            .card {
+                padding: var(--space-16);
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Authentication Section -->
+        <div class="auth-section active" id="authSection">
+            <div class="header">
+                <h1>💰 Expense Tracker</h1>
+                <p>Track your daily expenses easily</p>
+            </div>
+
+            <!-- Login Form -->
+            <div class="card" id="loginForm">
+                <h2 style="margin-top: 0; font-size: 20px;">Login</h2>
+                <div class="alert" id="loginAlert"></div>
+
+                <div class="form-group">
+                    <label class="form-label">Email <span class="required">*</span></label>
+                    <input type="email" id="loginEmail" class="form-control" placeholder="your@email.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Password <span class="required">*</span></label>
+                    <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required>
+                </div>
+
+                <button type="button" class="btn btn-primary" id="loginBtn">Login</button>
+
+                <div class="auth-toggle">
+                    Don't have an account?
+                    <button type="button" id="switchToSignup">Sign Up here</button>
+                </div>
+            </div>
+
+            <!-- Signup Form -->
+            <div class="card" id="signupForm" style="display: none;">
+                <h2 style="margin-top: 0; font-size: 20px;">Create Account</h2>
+                <div class="alert" id="signupAlert"></div>
+
+                <div class="form-group">
+                    <label class="form-label">Email <span class="required">*</span></label>
+                    <input type="email" id="signupEmail" class="form-control" placeholder="your@email.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Password <span class="required">*</span></label>
+                    <input type="password" id="signupPassword" class="form-control" placeholder="At least 6 characters" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Confirm Password <span class="required">*</span></label>
+                    <input type="password" id="signupPasswordConfirm" class="form-control" placeholder="••••••••" required>
+                </div>
+
+                <button type="button" class="btn btn-primary" id="signupBtn">Sign Up</button>
+
+                <div class="auth-toggle">
+                    Already have an account?
+                    <button type="button" id="switchToLogin">Login here</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expense Form Section -->
+        <div class="form-section" id="formSection">
+            <div class="header">
+                <h1>💰 Expense Tracker</h1>
+                <p>Record your daily expenses</p>
+            </div>
+
+            <div class="user-info">
+                <span id="userEmail">Logged in as: user@email.com</span>
+                <button type="button" class="btn-logout" id="logoutBtn">Logout</button>
+            </div>
+
+            <div class="card">
+                <div class="alert" id="formAlert"></div>
+
+                <div class="form-group">
+                    <label class="form-label">Date <span class="required">*</span></label>
+                    <input type="text" id="dateInput" class="form-control" readonly style="background: #f5f5f5; cursor: not-allowed;">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Price <span class="required">*</span></label>
+                    <input type="number" id="price" class="form-control" placeholder="Enter amount (e.g., 500)" min="0" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Category <span class="required">*</span></label>
+                    <select id="category" class="form-control" required>
+                        <option value="">-- Select Category --</option>
+                        <option value="Food">Food</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Utilities">Utilities</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Health">Health</option>
+                        <option value="Education">Education</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Type <span class="required">*</span></label>
+                    <input type="text" id="type" class="form-control" placeholder="e.g., Lunch, Taxi, Internet" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Details</label>
+                    <textarea id="details" class="form-control" placeholder="Additional details (optional)"></textarea>
+                </div>
+
+                <button type="button" class="btn btn-primary" id="submitBtn">Submit Expense</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+
+    <script>
+        // ========== CONFIGURATION ==========
+        // Replace these with your Firebase config from Firebase Console
+        const firebaseConfig = {
+            apiKey: "AIzaSyCa4SsORkz7AHg-2QW3wk8NcQPMFdhWf8o",
+            authDomain: "expense-tracker-5d18a.firebaseapp.com",
+            projectId: "expense-tracker-5d18a",
+            storageBucket: "expense-tracker-5d18a.firebasestorage.app",
+            messagingSenderId: "621741255532",
+            appId: "1:621741255532:web:016ad982c5ed6eb6c6e149"
+        };
+
+        // Replace this with your Google Apps Script Web App URL
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxBYRwiUVUrgfl9KoiX_lEA5baWrZXELJx2WU1fy3Eu2k4EnVAgsGU4PuerVhUG8qas/exec";
+
+        // ========== FIREBASE INITIALIZATION ==========
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // ========== DOM ELEMENTS ==========
+        const authSection = document.getElementById('authSection');
+        const formSection = document.getElementById('formSection');
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+
+        // Auth form elements
+        const loginEmail = document.getElementById('loginEmail');
+        const loginPassword = document.getElementById('loginPassword');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginAlert = document.getElementById('loginAlert');
+
+        const signupEmail = document.getElementById('signupEmail');
+        const signupPassword = document.getElementById('signupPassword');
+        const signupPasswordConfirm = document.getElementById('signupPasswordConfirm');
+        const signupBtn = document.getElementById('signupBtn');
+        const signupAlert = document.getElementById('signupAlert');
+
+        // Form elements
+        const dateInput = document.getElementById('dateInput');
+        const price = document.getElementById('price');
+        const category = document.getElementById('category');
+        const type = document.getElementById('type');
+        const details = document.getElementById('details');
+        const submitBtn = document.getElementById('submitBtn');
+        const formAlert = document.getElementById('formAlert');
+        const userEmail = document.getElementById('userEmail');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // ========== UI FUNCTIONS ==========
+        function switchToSignup() {
+            loginForm.style.display = 'none';
+            signupForm.style.display = 'block';
+            clearAuthAlerts();
+        }
+
+        function switchToLogin() {
+            signupForm.style.display = 'none';
+            loginForm.style.display = 'block';
+            clearAuthAlerts();
+        }
+
+        function clearAuthAlerts() {
+            loginAlert.classList.remove('show', 'alert-error', 'alert-success');
+            signupAlert.classList.remove('show', 'alert-error', 'alert-success');
+        }
+
+        function showAlert(element, message, type) {
+            element.textContent = message;
+            element.className = `alert show alert-${type}`;
+            setTimeout(() => {
+                if (element.classList.contains('show')) {
+                    element.classList.remove('show');
+                }
+            }, 5000);
+        }
+
+        function setLoading(btn, isLoading) {
+            if (isLoading) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="loading"></span> Processing...';
+            } else {
+                btn.disabled = false;
+                btn.textContent = btn === loginBtn ? 'Login' : (btn === signupBtn ? 'Sign Up' : 'Submit Expense');
+            }
+        }
+
+        function setDateToToday() {
+            const today = new Date();
+            const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+            dateInput.value = today.toLocaleDateString('en-IN', options);
+        }
+
+        function showFormSection(user) {
+            authSection.classList.remove('active');
+            formSection.classList.add('active');
+            userEmail.textContent = `Logged in as: ${user.email}`;
+            setDateToToday();
+        }
+
+        function showAuthSection() {
+            authSection.classList.add('active');
+            formSection.classList.remove('active');
+            clearForm();
+            switchToLogin();
+        }
+
+        function clearForm() {
+            price.value = '';
+            category.value = '';
+            type.value = '';
+            details.value = '';
+            formAlert.classList.remove('show');
+        }
+
+        // ========== AUTHENTICATION FUNCTIONS ==========
+        function handleLogin() {
+            const email = loginEmail.value.trim();
+            const password = loginPassword.value.trim();
+
+            if (!email || !password) {
+                showAlert(loginAlert, 'Please fill in all fields', 'error');
+                return;
+            }
+
+            setLoading(loginBtn, true);
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then(userCredential => {
+                    showAlert(loginAlert, 'Login successful!', 'success');
+                    setTimeout(() => {
+                        loginEmail.value = '';
+                        loginPassword.value = '';
+                        showFormSection(userCredential.user);
+                    }, 1000);
+                })
+                .catch(error => {
+                    setLoading(loginBtn, false);
+                    let message = 'Login failed. Please try again.';
+                    if (error.code === 'auth/user-not-found') {
+                        message = 'User not found. Please sign up first.';
+                    } else if (error.code === 'auth/wrong-password') {
+                        message = 'Incorrect password.';
+                    } else if (error.code === 'auth/invalid-email') {
+                        message = 'Invalid email format.';
+                    }
+                    showAlert(loginAlert, message, 'error');
+                });
+        }
+
+        function handleSignup() {
+            const email = signupEmail.value.trim();
+            const password = signupPassword.value.trim();
+            const confirmPassword = signupPasswordConfirm.value.trim();
+
+            if (!email || !password || !confirmPassword) {
+                showAlert(signupAlert, 'Please fill in all fields', 'error');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showAlert(signupAlert, 'Passwords do not match', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showAlert(signupAlert, 'Password must be at least 6 characters', 'error');
+                return;
+            }
+
+            setLoading(signupBtn, true);
+
+            auth.createUserWithEmailAndPassword(email, password)
+                .then(userCredential => {
+                    showAlert(signupAlert, 'Account created successfully! Logging in...', 'success');
+                    setTimeout(() => {
+                        signupEmail.value = '';
+                        signupPassword.value = '';
+                        signupPasswordConfirm.value = '';
+                        showFormSection(userCredential.user);
+                    }, 1000);
+                })
+                .catch(error => {
+                    setLoading(signupBtn, false);
+                    let message = 'Signup failed. Please try again.';
+                    if (error.code === 'auth/email-already-in-use') {
+                        message = 'Email already in use. Please login or use another email.';
+                    } else if (error.code === 'auth/weak-password') {
+                        message = 'Password is too weak. Use at least 6 characters.';
+                    } else if (error.code === 'auth/invalid-email') {
+                        message = 'Invalid email format.';
+                    }
+                    showAlert(signupAlert, message, 'error');
+                });
+        }
+
+        function handleLogout() {
+            auth.signOut().then(() => {
+                showAuthSection();
+            });
+        }
+
+        // ========== FORM SUBMISSION ==========
+        function handleSubmitExpense() {
+            const priceVal = price.value.trim();
+            const categoryVal = category.value.trim();
+            const typeVal = type.value.trim();
+            const detailsVal = details.value.trim();
+
+            if (!priceVal || !categoryVal || !typeVal) {
+                showAlert(formAlert, 'Please fill in all required fields (Price, Category, Type)', 'error');
+                return;
+            }
+
+            setLoading(submitBtn, true);
+
+            const data = {
+                Date: dateInput.value,
+                Price: priceVal,
+                Category: categoryVal,
+                Type: typeVal,
+                Details: detailsVal
+            };
+
+            // Convert data to form format for Apps Script
+            const formData = new FormData();
+            Object.keys(data).forEach(key => {
+                formData.append(`data[${key}]`, data[key]);
+            });
+
+            fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                setLoading(submitBtn, false);
+                if (result.result === 'success') {
+                    showAlert(formAlert, '✓ Expense added successfully!', 'success');
+                    clearForm();
+                    setDateToToday();
+                } else {
+                    showAlert(formAlert, 'Error adding expense. Please try again.', 'error');
+                }
+            })
+            .catch(error => {
+                setLoading(submitBtn, false);
+                console.error('Error:', error);
+                showAlert(formAlert, 'Error connecting to server. Please try again.', 'error');
+            });
+        }
+
+        // ========== EVENT LISTENERS ==========
+        document.getElementById('switchToSignup').addEventListener('click', switchToSignup);
+        document.getElementById('switchToLogin').addEventListener('click', switchToLogin);
+        loginBtn.addEventListener('click', handleLogin);
+        signupBtn.addEventListener('click', handleSignup);
+        submitBtn.addEventListener('click', handleSubmitExpense);
+        logoutBtn.addEventListener('click', handleLogout);
+
+        // Allow Enter key to submit
+        loginPassword.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleLogin();
+        });
+        signupPasswordConfirm.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSignup();
+        });
+        details.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && e.ctrlKey) handleSubmitExpense();
+        });
+
+        // ========== FIREBASE AUTH STATE LISTENER ==========
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                showFormSection(user);
+            } else {
+                showAuthSection();
+            }
+        });
+
+        // Set date on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (auth.currentUser) {
+                setDateToToday();
+            }
+        });
+    </script>
+</body>
+</html>
